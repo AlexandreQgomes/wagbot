@@ -272,5 +272,6 @@ formatUptime = (uptime) ->
   if uptime isnt 1
     unit = unit + 's'
 
+  uptime = Math.round(uptime)
   uptime = uptime + ' ' + unit
   uptime
