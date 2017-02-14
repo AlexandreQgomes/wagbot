@@ -74,11 +74,14 @@ controller.api.thread_settings.menu [
 ]
 
 clean = (answer) ->
-  answer
+  answer = answer
     .replace /&quot;|&#39;/g, "'"
     .replace /for example/gi, 'eg'
-    .substring 0, 600
-    .concat '…'
+  if answer.length > 600
+    answer = answer
+      .substring 0, 600
+      .concat '…'
+  answer
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
   question = message.match[1]
