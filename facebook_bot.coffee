@@ -88,6 +88,8 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
 
   if question.match /hi|hello|howdy/i
     bot.reply message, "Hi there, I'm a bot. I'm pretty dumb; because I'm just a chatbot version of the book Problems at school. But I know the answers to some questions you might have about problems at schools – obviously."
+  else if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
+    bot.reply message, ":|] I am a bot. I have been running for #{formatUptime process.uptime()} on #{os.hostname()}"
   else
     request
       headers:
@@ -254,9 +256,6 @@ controller.hears ['shutdown'], 'message_received', (bot, message) ->
         convo.say '*Phew!*'
         convo.next()
     ]
-
-controller.hears ['uptime', 'identify yourself', 'who are you', 'what is your name'], 'message_received', (bot, message) ->
-  bot.reply message, ":|] I am a bot. I have been running for #{formatUptime process.uptime()} on #{os.hostname()}"
 
 controller.on 'message_received', (bot, message) ->
   bot.reply message, 'Try: `what is my name` or `structured` or `call me captain`'
