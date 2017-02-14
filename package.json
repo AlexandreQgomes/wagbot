@@ -8,7 +8,16 @@
   },
   "author": "Matthew Henry John Bartlett",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mhjb/pas-bot.git"
+  },
   "dependencies": {
-    "coffee-script": "^1.12.3"
+    "botkit": "^0.4.10",
+    "coffee-script": "^1.12.3",
+    "command-line-args": "^4.0.1",
+    "localtunnel": "^1.8.2",
+    "os": "^0.1.1",
+    "request": "^2.79.0"
   }
 }
