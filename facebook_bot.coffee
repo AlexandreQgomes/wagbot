@@ -87,9 +87,9 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
   question = message.match[1]
 
   if question.match /hi|hello|howdy/i
-    bot.reply message, "Hi there, I'm a bot. I'm pretty dumb; because I'm just a chatbot version of the book Problems at school. But I know the answers to some questions you might have about problems at schools – obviously."
+    bot.reply message, "Hi there, I'm wagbot. I'm pretty dumb, but I know the answers to some questions you might have about problems at school."
   else if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
-    bot.reply message, ":|] I am a bot. I have been running for #{formatUptime process.uptime()} on #{os.hostname()}"
+    bot.reply message, ":) I'm wagbot. I've been running for #{formatUptime process.uptime()} on #{os.hostname()}"
   else
     request
       headers:
@@ -269,9 +269,11 @@ formatUptime = (uptime) ->
   if uptime > 60
     uptime = uptime / 60
     unit = 'hour'
+
+  uptime = Math.round(uptime)
+
   if uptime isnt 1
     unit = unit + 's'
 
-  uptime = Math.round(uptime)
   uptime = uptime + ' ' + unit
   uptime
