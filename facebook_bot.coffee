@@ -1,9 +1,5 @@
-if not (process.env.page_token and process.env.verify_token and process.env.app_secret)
-  console.log 'Error: Specify page_token, verify_token, app_secret in environment'
-  process.exit 1
-
-if not (process.env.kb_host and process.env.kb_id and process.env.subscription_key)
-  console.log 'Error: specify knowledgebase credentials in environment'
+if not (process.env.page_token and process.env.verify_token and process.env.app_secret and process.env.wit_client_token)
+  console.log 'Error: Specify page_token, verify_token, app_secret, wit_client_token in environment'
   process.exit 1
 
 Botkit = require 'botkit'
@@ -32,7 +28,6 @@ ops = commandLineArgs [
 if ops.lt is false and ops.ltsubdomain isnt null
   console.log "error: --ltsubdomain can only be used together with --lt."
   process.exit()
-
 
 controller = Botkit.facebookbot
   debug: true
@@ -65,24 +60,21 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
 
   question = message.match.input
 
-  if question.match /hi|hello|howdy/i
-    bot.reply message, "Hi :), I'm wagbot, an experimental Community Law project. I'm pretty dumb, but I know the answers to some questions you might have about problems at school."
-  else if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
+  if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
     bot.reply message, ":) I'm wagbot. I've been running for #{lib.formatUptime process.uptime()} on #{os.hostname()}"
   else
     request
       headers:
-        'Ocp-Apim-Subscription-Key': process.env.subscription_key
+        'Authorization': "Bearer #{process.env.wit_client_token}"
         'Content-Type': 'application/json'
-      uri: "#{process.env.kb_host}/knowledgebases/#{process.env.kb_id}/generateAnswer",
-      json:
-        question: question
+      uri: "https://api.wit.ai/converse?v=20160526&session_id=12abc&q=hi#{question}",
       method: 'POST'
       , (err, res, body) ->
         if err
-          bot.reply message, "Sorry, summit went wrong-o: #{err}"
+          bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
         else
-          if body.answer is "No good match found in the KB"
+          data = JSON.parse(body)
+          if data.type is 'stop'
             bot.reply message,
               "attachment":
                 "type": "template"
@@ -92,13 +84,13 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
                   "buttons": [
                     "type":"phone_number",
                     "title":"📞 Call Community Law",
-                    "payload":"+64272113455"
+                    "payload":"+64 4 499 2928"
                   ]
             lib.log_no_kb_match message
 
           else
-            bot.reply message, lib.clean body.answer
-            lib.log_response message, body
+            bot.reply message, data.msg
+            lib.log_response message, data
 
 controller.hears ['shutdown'], 'message_received', (bot, message) ->
   bot.startConversation message, (err, convo) ->

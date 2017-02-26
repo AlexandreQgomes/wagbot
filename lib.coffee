@@ -4,9 +4,9 @@ stats_db = new sqlite3.Database('wagbot.db')
 
 module.exports =
   clean: (answer) ->
-    answer = answer
-      .replace /&quot;|&#39;/g, "'"
-      .replace /for example/gi, 'eg'
+    # answer = answer
+    #   .replace /&quot;|&#39;/g, "'"
+    #   .replace /for example/gi, 'eg'
     if answer.length > 600
       answer = answer
         .substring 0, 600
@@ -22,10 +22,10 @@ module.exports =
       message.timestamp
     ]
 
-  log_response: (message, kb_body) ->
+  log_response: (message, data) ->
     stats_db.run "update requests set response = ?, score = ? where id = ?", [
-      kb_body.answer
-      kb_body.score
+      data.msg
+      data.confidence
       message.mid
     ]
 
