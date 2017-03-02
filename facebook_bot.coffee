@@ -67,7 +67,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
       headers:
         'Authorization': "Bearer #{process.env.wit_client_token}"
         'Content-Type': 'application/json'
-      uri: "https://api.wit.ai/converse?v=20160526&session_id=12abc&q=hi#{question}",
+      uri: "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=hi#{question}",
       method: 'POST'
       , (err, res, body) ->
         if err
