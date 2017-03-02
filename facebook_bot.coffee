@@ -89,7 +89,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
             lib.log_no_kb_match message
 
           else
-            bot.reply message, data.msg
+            bot.reply message, lib.clean data.msg
             lib.log_response message, data
 
 controller.hears ['shutdown'], 'message_received', (bot, message) ->
