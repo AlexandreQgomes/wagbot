@@ -11,7 +11,13 @@ module.exports =
       answer = answer
         .substring 0, 600
         .concat '…'
-    answer
+      return text: answer, quick_replies: [
+          content_type: 'text'
+          title: 'Tell me more'
+          payload: answer.substring 600
+        ]
+    else
+      return answer
 
   log_request: (message) ->
     stats_db.run "insert into requests (id, user, channel, request, timestamp) values (?,?,?,?,?)", [

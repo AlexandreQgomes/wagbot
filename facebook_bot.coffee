@@ -7,6 +7,7 @@ os = require 'os'
 commandLineArgs = require 'command-line-args'
 localtunnel = require 'localtunnel'
 request = require 'request'
+_ = require 'underscore'
 lib = require './lib'
 
 ops = commandLineArgs [
@@ -30,7 +31,7 @@ if ops.lt is false and ops.ltsubdomain isnt null
   process.exit()
 
 controller = Botkit.facebookbot
-  debug: true
+  debug: false
   log: true
   access_token: process.env.page_token
   verify_token: process.env.verify_token
@@ -73,6 +74,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
         if err
           bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
         else
+          console.log "Body: #{body}"
           data = JSON.parse(body)
           if data.type is 'stop'
             bot.reply message,
@@ -82,15 +84,32 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
                   "template_type": "button"
                   "text": "Sorry, I've got no idea. Want to talk to someone with some clues?"
                   "buttons": [
-                    "type":"phone_number",
-                    "title":"📞 Call Community Law",
-                    "payload":"+64 4 499 2928"
+                    "type": "phone_number"
+                    "title": "📞 Call Community Law"
+                    "payload": "+64 4 499 2928"
                   ]
             lib.log_no_kb_match message
 
           else
-            bot.reply message, lib.clean data.msg
+            if data.quickreplies
+              quick_replies = _.map data.quickreplies, (val) ->
+                content_type: 'text'
+                title: val
+                payload: 'empty'
+
+              bot.reply message,
+                text: lib.clean data.msg
+                quick_replies: quick_replies
+            else
+              bot.reply message, lib.clean data.msg
+
             lib.log_response message, data
+
+# this isn't doing anything :(
+controller.on 'facebook_postback', (bot, message) ->
+  console.log bot, message
+  bot.reply message, 'Great Choice!!!! (' + message.payload + ')'
+
 
 controller.hears ['shutdown'], 'message_received', (bot, message) ->
   bot.startConversation message, (err, convo) ->
