@@ -43,3 +43,4 @@ config/*.json
 start.sh
 wagbot.db
 .DS_Store
+.env

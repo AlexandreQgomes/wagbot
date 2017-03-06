@@ -11,11 +11,12 @@ module.exports =
       answer = answer
         .substring 0, 600
         .concat '…'
-      return text: answer, quick_replies: [
-          content_type: 'text'
-          title: 'Tell me more'
-          payload: answer.substring 600
-        ]
+      return answer
+      # return text: answer, quick_replies: [
+      #     content_type: 'text'
+      #     title: 'Tell me more'
+      #     payload: answer.substring 600
+      #   ]
     else
       return answer
 

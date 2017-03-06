@@ -4,31 +4,11 @@ if not (process.env.page_token and process.env.verify_token and process.env.app_
 
 Botkit = require 'botkit'
 os = require 'os'
-commandLineArgs = require 'command-line-args'
 localtunnel = require 'localtunnel'
 request = require 'request'
 _ = require 'underscore'
 lib = require './lib'
 
-ops = commandLineArgs [
-  name: 'lt'
-  alias: 'l'
-  args: 1
-  description: 'Use localtunnel.me to make your bot available on the web.'
-  type: Boolean
-  defaultValue: false
-,
-  name: 'ltsubdomain'
-  alias: 's'
-  args: 1,
-  description: 'Custom subdomain for the localtunnel.me URL. This option can only be used together with --lt.'
-  type: String
-  defaultValue: null
-]
-
-if ops.lt is false and ops.ltsubdomain isnt null
-  console.log "error: --ltsubdomain can only be used together with --lt."
-  process.exit()
 
 controller = Botkit.facebookbot
   debug: false
@@ -43,16 +23,28 @@ bot = controller.spawn()
 controller.setupWebserver process.env.port or 3000, (err, webserver) ->
   controller.createWebhookEndpoints webserver, bot, () ->
     console.log 'ONLINE!'
-    if ops.lt
-      tunnel = localtunnel process.env.port or 3000, subdomain: ops.ltsubdomain, (err, tunnel) ->
+    if process.env.ltsubdomain
+      tunnel_error_handler = (err, tunnel) ->
         if err
           console.log err
-          process.exit()
+          process.exit
         console.log "Your bot is available on the web at the following URL: #{tunnel.url}/facebook/receive"
+
+      tunnel = localtunnel process.env.port or 3000, subdomain: process.env.ltsubdomain, tunnel_error_handler
 
       tunnel.on 'close', () ->
         console.log "Your bot is no longer available on the web at the localtunnnel.me URL."
         process.exit()
+
+      tunnel.on 'error', (err) ->
+        console.log err
+        console.log "Attempting to restart…"
+
+        setTimeout () ->
+          tunnel.close()
+          tunnel.listen process.env.port or 3000, subdomain: process.env.ltsubdomain, tunnel_error_handler
+        , 1000
+
 
 controller.api.thread_settings.greeting "Hi :), I'm wagbot, an experimental Community Law project. I'm pretty dumb, but I know the answers to some questions you might have about problems at school."
 
@@ -102,6 +94,10 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
                 quick_replies: quick_replies
             else
               bot.reply message, lib.clean data.msg
+              console.log "Message:"
+              console.log message
+              console.log "lib.clean data.msg:"
+              console.log lib.clean data.msg
 
             lib.log_response message, data
 
