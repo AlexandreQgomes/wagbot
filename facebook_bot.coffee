@@ -20,17 +20,17 @@ controller = Botkit.facebookbot
 
 bot = controller.spawn()
 
-controller.setupWebserver process.env.port or 3000, (err, webserver) ->
+controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
   controller.createWebhookEndpoints webserver, bot, () ->
     console.log 'ONLINE!'
     if process.env.ltsubdomain
-      tunnel_error_handler = (err, tunnel) ->
+      tunnel_handler = (err, tunnel) ->
         if err
           console.log err
           process.exit
         console.log "Your bot is available on the web at the following URL: #{tunnel.url}/facebook/receive"
 
-      tunnel = localtunnel process.env.port or 3000, subdomain: process.env.ltsubdomain, tunnel_error_handler
+      tunnel = localtunnel process.env.PORT or 3000, subdomain: process.env.ltsubdomain, tunnel_handler
 
       tunnel.on 'close', () ->
         console.log "Your bot is no longer available on the web at the localtunnnel.me URL."
@@ -42,7 +42,7 @@ controller.setupWebserver process.env.port or 3000, (err, webserver) ->
 
         setTimeout () ->
           tunnel.close()
-          tunnel.listen process.env.port or 3000, subdomain: process.env.ltsubdomain, tunnel_error_handler
+          tunnel = localtunnel process.env.PORT or 3000, subdomain: process.env.ltsubdomain, tunnel_handler
         , 1000
 
 
