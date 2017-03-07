@@ -5,19 +5,15 @@ stats_db.connect()
 
 module.exports =
   clean: (answer) ->
-    # answer = answer
-    #   .replace /&quot;|&#39;/g, "'"
-    #   .replace /for example/gi, 'eg'
     if answer.length > 600
       answer = answer
         .substring 0, 600
         .concat '…'
-      return answer
-      # return text: answer, quick_replies: [
-      #     content_type: 'text'
-      #     title: 'Tell me more'
-      #     payload: answer.substring 600
-      #   ]
+      return text: answer, quick_replies: [
+          content_type: 'text'
+          title: 'Tell me more'
+          payload: answer.substring 600
+        ]
     else
       return answer
 
@@ -31,9 +27,10 @@ module.exports =
     ]
 
   log_response: (message, data) ->
-    stats_db.query "update requests set response = $1, score = $2 where id = $3", [
+    stats_db.query "update requests set response = $1, score = $2, intent = $3 where id = $4", [
       data.msg
-      data.confidence
+      data.entities.intent.confidence
+      data.entities.intent.value
       message.mid
     ]
 

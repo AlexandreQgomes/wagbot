@@ -49,57 +49,56 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
 controller.api.thread_settings.greeting "Hi :), I'm wagbot, an experimental Community Law project. I'm pretty dumb, but I know the answers to some questions you might have about problems at school."
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
-  lib.log_request message
+  bot.startTyping message, () ->
+    lib.log_request message
 
-  question = message.match.input
+    question = message.match.input
 
-  if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
-    bot.reply message, ":) I'm wagbot. I've been running for #{lib.formatUptime process.uptime()} on #{os.hostname()}"
-  else
-    request
-      headers:
-        'Authorization': "Bearer #{process.env.wit_client_token}"
-        'Content-Type': 'application/json'
-      uri: "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}",
-      method: 'POST'
-      , (err, res, body) ->
-        if err
-          bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
-        else
-          console.log "Body: #{body}"
-          data = JSON.parse(body)
-          if data.type is 'stop'
-            bot.reply message,
-              "attachment":
-                "type": "template"
-                "payload":
-                  "template_type": "button"
-                  "text": "Sorry, I've got no idea. Want to talk to someone with some clues?"
-                  "buttons": [
-                    "type": "phone_number"
-                    "title": "📞 Call Community Law"
-                    "payload": "+64 4 499 2928"
-                  ]
-            lib.log_no_kb_match message
-
+    if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
+      bot.reply message, ":) I'm wagbot. I've been running for #{lib.formatUptime process.uptime()} on #{os.hostname()}"
+    else
+      request
+        headers:
+          'Authorization': "Bearer #{process.env.wit_client_token}"
+          'Content-Type': 'application/json'
+        uri: "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}",
+        method: 'POST'
+        , (err, res, body) ->
+          if err
+            bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
           else
-            if data.quickreplies
-              quick_replies = _.map data.quickreplies, (val) ->
-                content_type: 'text'
-                title: val
-                payload: 'empty'
-
+            console.log "Body: #{body}"
+            data = JSON.parse(body)
+            if data.type is 'stop'
               bot.reply message,
-                text: lib.clean data.msg
-                quick_replies: quick_replies
-            else
-              bot.reply message, lib.clean data.msg
-              console.log "Message:"
-              console.log message
-              console.log "lib.clean data.msg:"
-              console.log lib.clean data.msg
+                "attachment":
+                  "type": "template"
+                  "payload":
+                    "template_type": "button"
+                    "text": "Sorry, I've got no idea. Want to talk to someone with some clues?"
+                    "buttons": [
+                      "type": "phone_number"
+                      "title": "📞 Call Community Law"
+                      "payload": "+64 4 499 2928"
+                    ]
+              lib.log_no_kb_match message
 
-            lib.log_response message, data
+            else
+              if data.quickreplies
+                quick_replies = _.map data.quickreplies, (val) ->
+                  content_type: 'text'
+                  title: val
+                  payload: 'empty'
+
+                bot.reply message,
+                  text: lib.clean data.msg
+                  quick_replies: quick_replies
+              else
+                bot.reply message, lib.clean data.msg
+                console.log "Message:"
+                console.log message
+
+              lib.log_response message, data
 
 # this isn't doing anything :(
 controller.on 'facebook_postback', (bot, message) ->
