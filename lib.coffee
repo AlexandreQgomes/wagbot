@@ -7,7 +7,7 @@ stats_db.connect()
 truncate_to_word = (string, maxLength) ->
   truncatedString = string.substring 0, maxLength
   truncatedString = truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' ' # re-trim if we are in the middle of a word
-  truncatedString.concat '…'
+  truncatedString.concat ' …'
 
 module.exports =
   clean: (answer) ->
@@ -21,7 +21,7 @@ module.exports =
           buttons: [
             type: 'postback'
             title: 'Tell me more'
-            payload: answer.substring trimmedAnswer.length - 1
+            payload: answer.substring trimmedAnswer.length - 2
           ]
     else
       return answer

@@ -86,13 +86,18 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
             else
               if data.quickreplies
                 quick_replies = _.map data.quickreplies, (val) ->
-                  content_type: 'text'
+                  type: 'postback'
                   title: val
-                  payload: 'empty'
+                  payload: val
 
                 bot.reply message,
-                  text: lib.clean data.msg
-                  quick_replies: quick_replies
+                  attachment:
+                    type: 'template'
+                    payload:
+                      template_type: 'button'
+                      text: lib.clean data.msg
+                      buttons: quick_replies
+
               else
                 bot.reply message, lib.clean data.msg
 
