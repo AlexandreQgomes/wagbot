@@ -3,21 +3,20 @@ pg = require 'pg'
 stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
 stats_db.connect()
 
+# thanks http://stackoverflow.com/a/5454303
+truncate_to_word = (string, maxLength) ->
+  truncatedString = string.substring 0, maxLength
+  truncatedString = truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' ' # re-trim if we are in the middle of a word
+  truncatedString.concat '…'
+
 module.exports =
   clean: (answer) ->
     if answer.length > 600
-      # return text: answer, quick_replies: [
-      #     content_type: 'text'
-      #     title: 'Tell me more'
-      #     payload: answer.substring 600
-      #   ]
       return attachment:
         type: 'template'
         payload:
           template_type: 'button'
-          text: answer
-            .substring 0, 600
-            .concat '…'
+          text: truncate_to_word answer, 600
           buttons: [
             type: 'postback'
             title: 'Tell me more'

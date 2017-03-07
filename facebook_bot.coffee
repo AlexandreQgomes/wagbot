@@ -96,7 +96,6 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
               else
                 bot.reply message, lib.clean data.msg
 
-
               lib.log_response message, data
 
 controller.on 'facebook_postback', (bot, message) ->
