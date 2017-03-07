@@ -99,10 +99,9 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
 
               lib.log_response message, data
 
-# this isn't doing anything :(
 controller.on 'facebook_postback', (bot, message) ->
   console.log bot, message
-  bot.reply message, 'Great Choice!!!! (' + message.payload + ')'
+  bot.reply message, lib.clean message.payload
 
 
 controller.hears ['shutdown'], 'message_received', (bot, message) ->
