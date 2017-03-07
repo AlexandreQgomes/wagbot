@@ -16,12 +16,12 @@ module.exports =
         payload:
           template_type: 'button'
           text: answer
-            .substring 0,60
+            .substring 0, 600
             .concat '…'
           buttons: [
             type: 'postback'
             title: 'Tell me more'
-            payload: 'To be defined!!'
+            payload: answer.substring 600
           ]
     else
       return answer
