@@ -12,15 +12,16 @@ truncate_to_word = (string, maxLength) ->
 module.exports =
   clean: (answer) ->
     if answer.length > 600
+      trimmedAnswer = truncate_to_word answer, 600
       return attachment:
         type: 'template'
         payload:
           template_type: 'button'
-          text: truncate_to_word answer, 600
+          text: trimmedAnswer
           buttons: [
             type: 'postback'
             title: 'Tell me more'
-            payload: answer.substring 600
+            payload: answer.substring trimmedAnswer.length - 1
           ]
     else
       return answer
