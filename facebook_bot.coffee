@@ -69,7 +69,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
           else
             console.log "Body: #{body}"
             data = JSON.parse(body)
-            if data.type is 'stop'
+            if data.type is 'stop' or _.isEmpty data.entities
               bot.reply message,
                 "attachment":
                   "type": "template"
@@ -95,8 +95,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
                   quick_replies: quick_replies
               else
                 bot.reply message, lib.clean data.msg
-                console.log "Message:"
-                console.log message
+
 
               lib.log_response message, data
 
