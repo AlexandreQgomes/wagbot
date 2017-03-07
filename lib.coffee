@@ -38,7 +38,7 @@ module.exports =
   log_response: (message, data) ->
     stats_db.query "update requests set response = $1, score = $2, intent = $3 where id = $4", [
       data.msg
-      data.entities.intent.confidence
+      if data.entities.intent then data.entities.intent.confidence else null
       data.entities.intent.value
       message.mid
     ]
