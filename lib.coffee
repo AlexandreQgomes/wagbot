@@ -6,14 +6,23 @@ stats_db.connect()
 module.exports =
   clean: (answer) ->
     if answer.length > 600
-      answer = answer
-        .substring 0, 600
-        .concat '…'
-      return text: answer, quick_replies: [
-          content_type: 'text'
-          title: 'Tell me more'
-          payload: answer.substring 600
-        ]
+      # return text: answer, quick_replies: [
+      #     content_type: 'text'
+      #     title: 'Tell me more'
+      #     payload: answer.substring 600
+      #   ]
+      return attachment:
+        type: 'template'
+        payload:
+          template_type: 'button'
+          text: answer
+            .substring 0,60
+            .concat '…'
+          buttons: [
+            type: 'postback'
+            title: 'Tell me more'
+            payload: 'To be defined!!'
+          ]
     else
       return answer
 
