@@ -1,6 +1,7 @@
-sqlite3 = require 'sqlite3'
-  .verbose()
-stats_db = new sqlite3.Database('wagbot.db')
+pg = require 'pg'
+
+stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
+stats_db.connect()
 
 module.exports =
   clean: (answer) ->
@@ -21,7 +22,7 @@ module.exports =
       return answer
 
   log_request: (message) ->
-    stats_db.run "insert into requests (id, user, channel, request, timestamp) values (?,?,?,?,?)", [
+    stats_db.query "insert into requests (id, \"user\", channel, request, timestamp) values ($1,$2,$3,$4,$5)", [
       message.mid
       message.user
       message.channel
@@ -30,14 +31,14 @@ module.exports =
     ]
 
   log_response: (message, data) ->
-    stats_db.run "update requests set response = ?, score = ? where id = ?", [
+    stats_db.query "update requests set response = $1, score = $2 where id = $3", [
       data.msg
       data.confidence
       message.mid
     ]
 
   log_no_kb_match: (message) ->
-    stats_db.run "update requests set no_kb_match = 'true' where id = ?", [message.mid]
+    stats_db.query "update requests set no_kb_match = 'true' where id = $1", [message.mid]
 
   formatUptime: (uptime) ->
     unit = 'second'

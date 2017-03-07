@@ -28,12 +28,12 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
         if err
           console.log err
           process.exit
-        console.log "Your bot is available on the web at the following URL: #{tunnel.url}/facebook/receive"
+        console.log "Your bot is available at #{tunnel.url}/facebook/receive"
 
       tunnel = localtunnel process.env.PORT or 3000, subdomain: process.env.ltsubdomain, tunnel_handler
 
       tunnel.on 'close', () ->
-        console.log "Your bot is no longer available on the web at the localtunnnel.me URL."
+        console.log "Your bot is no longer available on the web #{tunnel.url}"
         process.exit()
 
       tunnel.on 'error', (err) ->
@@ -43,7 +43,7 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
         setTimeout () ->
           tunnel.close()
           tunnel = localtunnel process.env.PORT or 3000, subdomain: process.env.ltsubdomain, tunnel_handler
-        , 1000
+        , 3000
 
 
 controller.api.thread_settings.greeting "Hi :), I'm wagbot, an experimental Community Law project. I'm pretty dumb, but I know the answers to some questions you might have about problems at school."
