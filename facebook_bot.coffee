@@ -78,8 +78,8 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
                     "text": "Sorry, I've got no idea. Want to talk to someone with some clues?"
                     "buttons": [
                       "type": "phone_number"
-                      "title": "📞 Call Community Law"
-                      "payload": "+64 4 499 2928"
+                      "title": "📞 Call the Student Rights Service"
+                      "payload": "+64 800 499 488"
                     ]
               lib.log_no_kb_match message
 
