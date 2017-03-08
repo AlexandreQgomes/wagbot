@@ -6,7 +6,7 @@ stats_db.connect()
 # thanks http://stackoverflow.com/a/5454303
 truncate_to_word = (string, maxLength) ->
   truncatedString = string.substring 0, maxLength
-  truncatedString = truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' ' # re-trim if we are in the middle of a word
+  truncatedString = truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' '
   truncatedString.concat ' …'
 
 module.exports =
