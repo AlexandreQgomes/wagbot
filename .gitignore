@@ -44,3 +44,4 @@ start.sh
 wagbot.db
 .DS_Store
 .env
+coffeelint.json
