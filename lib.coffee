@@ -1,4 +1,5 @@
 pg = require 'pg'
+_ = require 'underscore'
 
 stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
 stats_db.connect()
@@ -10,6 +11,23 @@ truncate_to_word = (string, maxLength) ->
   truncatedString.concat ' …'
 
 module.exports =
+  parse_quick_replies: (quickreplies_from_wit) ->
+    buttons = _.map quickreplies_from_wit, (text) ->
+      messenger_url = text.match /m.me\/\d+/i
+      if messenger_url
+        button =
+          type: 'web_url'
+          url: messenger_url[0]
+          title: text
+      else
+        button =
+          type: 'postback'
+          title: text
+          payload: text
+      button
+    console.log buttons
+    buttons
+
   clean: (answer) ->
     if answer.length > 600
       trimmedAnswer = truncate_to_word answer, 600

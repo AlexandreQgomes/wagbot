@@ -6,9 +6,8 @@ Botkit = require 'botkit'
 os = require 'os'
 localtunnel = require 'localtunnel'
 request = require 'request'
-_ = require 'underscore'
 lib = require './lib'
-
+_ = require 'underscore'
 
 controller = Botkit.facebookbot
   debug: false
@@ -60,11 +59,14 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
     if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
       bot.reply message, ":) I'm wagbot. I've been running for #{lib.formatUptime process.uptime()} on #{os.hostname()}"
     else
+      uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
+      console.log "URI: #{uri}"
+
       request
         headers:
           'Authorization': "Bearer #{process.env.wit_client_token}"
           'Content-Type': 'application/json'
-        uri: "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}",
+        uri: uri
         method: 'POST'
         , (err, res, body) ->
           if err
@@ -72,13 +74,13 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
           else
             console.log "Body: #{body}"
             data = JSON.parse(body)
-            if data.type is 'stop' or _.isEmpty data.entities
+            if _.isEmpty data.entities
               bot.reply message,
                 "attachment":
                   "type": "template"
                   "payload":
                     "template_type": "button"
-                    "text": "Sorry, I've got no idea. Want to talk to a human?"
+                    "text": "Sorry, I don't know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?"
                     "buttons": [
                       "type": "phone_number"
                       "title": "📞 Student Rights"
@@ -87,20 +89,13 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
               lib.log_no_kb_match message
 
             else
-              if data.quickreplies
-                quick_replies = _.map data.quickreplies, (val) ->
-                  type: 'postback'
-                  title: val
-                  payload: val
-
-                bot.reply message,
+              if data.quickreplies then bot.reply message,
                   attachment:
                     type: 'template'
                     payload:
                       template_type: 'button'
                       text: lib.clean data.msg
-                      buttons: quick_replies
-
+                      buttons: lib.parse_quick_replies data.quickreplies
               else
                 bot.reply message, lib.clean data.msg
 
