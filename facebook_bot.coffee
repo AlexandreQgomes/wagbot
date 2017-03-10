@@ -5,7 +5,6 @@ if not (process.env.page_token and process.env.verify_token and process.env.app_
 Botkit = require 'botkit'
 os = require 'os'
 localtunnel = require 'localtunnel'
-request = require 'request'
 lib = require './lib'
 _ = require 'underscore'
 
@@ -66,52 +65,14 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
         if _.isEmpty data.entities
           bot.reply message, lib.dont_know_message
           lib.log_no_kb_match message
-
         else
-          if data.quickreplies then bot.reply message,
-              attachment:
-                type: 'template'
-                payload:
-                  template_type: 'button'
-                  text: lib.clean data.msg
-                  buttons: lib.parse_quick_replies data.quickreplies
+          if data.quickreplies then bot.reply message, lib.reply_with_buttons data
           else
             bot.reply message, lib.clean data.msg
 
           lib.log_response message, data
 
       lib.wit_converse_api question, api_error_func, api_success_func
-
-      # uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
-      # console.log "URI: #{uri}"
-      #
-      # request
-      #   headers:
-      #     'Authorization': "Bearer #{process.env.wit_client_token}"
-      #     'Content-Type': 'application/json'
-      #   uri: uri
-      #   method: 'POST'
-      #   , (err, res, body) ->
-      #     if err then bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
-      #     else
-      #       console.log "Body: #{body}"
-      #       data = JSON.parse(body)
-      #       if _.isEmpty data.entities
-      #         bot.reply message, lib.dont_know_message
-      #         lib.log_no_kb_match message
-      #
-      #       else
-      #         if data.quickreplies then bot.reply message,
-      #             attachment:
-      #               type: 'template'
-      #               payload:
-      #                 template_type: 'button'
-      #                 text: lib.clean data.msg
-      #                 buttons: lib.parse_quick_replies data.quickreplies
-      #         else
-      #           bot.reply message, lib.clean data.msg
-      #
-      #         lib.log_response message, data
 
 controller.on 'facebook_postback', (bot, message) ->
   console.log bot, message

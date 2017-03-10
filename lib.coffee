@@ -28,13 +28,13 @@ module.exports =
 
   parse_quick_replies: (quickreplies_from_wit) ->
     buttons = _.map quickreplies_from_wit, (text) ->
-      messenger_url = (text.match /http:\/\/m\.me\/\d+/i)[0]
+      messenger_url = (text.match /http:\/\/m\.me\/\d+/i)
       if messenger_url
-        link_title = '💬 ' + (text.match /(.+) http:\/\/m\.me\/.+/i)[1]
+        link_title = '💬 ' + (text.match /(.+) http:\/\/m\.me\/.+/i)
         button =
           type: 'web_url'
-          url: messenger_url
-          title: link_title
+          url: messenger_url[0]
+          title: link_title[1]
       else
         button =
           type: 'postback'
@@ -59,6 +59,14 @@ module.exports =
           ]
     else
       return answer
+
+  reply_with_buttons: (api_response_data) ->
+    attachment:
+      type: 'template'
+      payload:
+        template_type: 'button'
+        text: lib.clean api_response_data.msg
+        buttons: lib.parse_quick_replies api_response_data.quickreplies
 
   dont_know_message: () ->
     "attachment":
