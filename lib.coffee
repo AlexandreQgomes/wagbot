@@ -1,5 +1,6 @@
 pg = require 'pg'
 _ = require 'underscore'
+request = require 'request'
 
 stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
 stats_db.connect()
@@ -11,11 +12,25 @@ truncate_to_word = (string, maxLength) ->
   truncatedString.concat ' …'
 
 module.exports =
+  wit_converse_api: (question, api_error_func, api_success_func) ->
+    uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
+    console.log "URI: #{uri}"
+    request
+      headers:
+        'Authorization': "Bearer #{process.env.wit_client_token}"
+        'Content-Type': 'application/json'
+      uri: uri
+      method: 'POST'
+      , (err, res, body) ->
+        if err then api_error_func
+        else
+          api_success_func body
+
   parse_quick_replies: (quickreplies_from_wit) ->
     buttons = _.map quickreplies_from_wit, (text) ->
-      messenger_url = (text.match /m.me\/\d+/i)[0]
+      messenger_url = (text.match /http:\/\/m\.me\/\d+/i)[0]
       if messenger_url
-        link_title = '💬 ' + (text.match /(.+) m.me\/.+/i)[1]
+        link_title = '💬 ' + (text.match /(.+) http:\/\/m\.me\/.+/i)[1]
         button =
           type: 'web_url'
           url: messenger_url
@@ -44,6 +59,19 @@ module.exports =
           ]
     else
       return answer
+
+  dont_know_message: () ->
+    "attachment":
+      "type": "template"
+      "payload":
+        "template_type": "button"
+        "text": "Sorry, I don't know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?"
+        "buttons": [
+          "type": "phone_number"
+          "title": "📞 Student Rights"
+          "payload": "+64 800 499 488"
+        ]
+
 
   log_request: (message) ->
     stats_db.query "insert into requests (id, \"user\", channel, request, timestamp) values ($1,$2,$3,$4,$5)", [

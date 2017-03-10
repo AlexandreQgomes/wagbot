@@ -59,47 +59,59 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
     if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
       bot.reply message, ":) I'm wagbot. I've been running for #{lib.formatUptime process.uptime()} on #{os.hostname()}"
     else
-      uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
-      console.log "URI: #{uri}"
+      api_error_func = () -> bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
+      api_success_func = (body) ->
+        console.log "Body: #{body}"
+        data = JSON.parse(body)
+        if _.isEmpty data.entities
+          bot.reply message, lib.dont_know_message
+          lib.log_no_kb_match message
 
-      request
-        headers:
-          'Authorization': "Bearer #{process.env.wit_client_token}"
-          'Content-Type': 'application/json'
-        uri: uri
-        method: 'POST'
-        , (err, res, body) ->
-          if err
-            bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
+        else
+          if data.quickreplies then bot.reply message,
+              attachment:
+                type: 'template'
+                payload:
+                  template_type: 'button'
+                  text: lib.clean data.msg
+                  buttons: lib.parse_quick_replies data.quickreplies
           else
-            console.log "Body: #{body}"
-            data = JSON.parse(body)
-            if _.isEmpty data.entities
-              bot.reply message,
-                "attachment":
-                  "type": "template"
-                  "payload":
-                    "template_type": "button"
-                    "text": "Sorry, I don't know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?"
-                    "buttons": [
-                      "type": "phone_number"
-                      "title": "📞 Student Rights"
-                      "payload": "+64 800 499 488"
-                    ]
-              lib.log_no_kb_match message
+            bot.reply message, lib.clean data.msg
 
-            else
-              if data.quickreplies then bot.reply message,
-                  attachment:
-                    type: 'template'
-                    payload:
-                      template_type: 'button'
-                      text: lib.clean data.msg
-                      buttons: lib.parse_quick_replies data.quickreplies
-              else
-                bot.reply message, lib.clean data.msg
+          lib.log_response message, data
 
-              lib.log_response message, data
+      lib.wit_converse_api question, api_error_func, api_success_func
+
+      # uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
+      # console.log "URI: #{uri}"
+      #
+      # request
+      #   headers:
+      #     'Authorization': "Bearer #{process.env.wit_client_token}"
+      #     'Content-Type': 'application/json'
+      #   uri: uri
+      #   method: 'POST'
+      #   , (err, res, body) ->
+      #     if err then bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
+      #     else
+      #       console.log "Body: #{body}"
+      #       data = JSON.parse(body)
+      #       if _.isEmpty data.entities
+      #         bot.reply message, lib.dont_know_message
+      #         lib.log_no_kb_match message
+      #
+      #       else
+      #         if data.quickreplies then bot.reply message,
+      #             attachment:
+      #               type: 'template'
+      #               payload:
+      #                 template_type: 'button'
+      #                 text: lib.clean data.msg
+      #                 buttons: lib.parse_quick_replies data.quickreplies
+      #         else
+      #           bot.reply message, lib.clean data.msg
+      #
+      #         lib.log_response message, data
 
 controller.on 'facebook_postback', (bot, message) ->
   console.log bot, message
