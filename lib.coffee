@@ -13,12 +13,13 @@ truncate_to_word = (string, maxLength) ->
 module.exports =
   parse_quick_replies: (quickreplies_from_wit) ->
     buttons = _.map quickreplies_from_wit, (text) ->
-      messenger_url = text.match /m.me\/\d+/i
+      messenger_url = (text.match /m.me\/\d+/i)[0]
       if messenger_url
+        link_title = '💬' + (text.match /(.+) m.me\/.+/i)[1]
         button =
           type: 'web_url'
-          url: messenger_url[0]
-          title: text
+          url: messenger_url
+          title: link_title
       else
         button =
           type: 'postback'
