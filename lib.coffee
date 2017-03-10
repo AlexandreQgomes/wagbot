@@ -15,7 +15,7 @@ module.exports =
     buttons = _.map quickreplies_from_wit, (text) ->
       messenger_url = (text.match /m.me\/\d+/i)[0]
       if messenger_url
-        link_title = '💬' + (text.match /(.+) m.me\/.+/i)[1]
+        link_title = '💬 ' + (text.match /(.+) m.me\/.+/i)[1]
         button =
           type: 'web_url'
           url: messenger_url
