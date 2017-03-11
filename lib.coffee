@@ -30,11 +30,11 @@ module.exports =
     buttons = _.map quickreplies_from_wit, (text) ->
       messenger_url = (text.match /http:\/\/m\.me\/\d+/i)
       if messenger_url
-        link_title = '💬 ' + (text.match /(.+) http:\/\/m\.me\/.+/i)
+        link_title = '💬 ' + (text.match /(.+) http:\/\/m\.me\/.+/i)[1]
         button =
           type: 'web_url'
           url: messenger_url[0]
-          title: link_title[1]
+          title: link_title
       else
         button =
           type: 'postback'
