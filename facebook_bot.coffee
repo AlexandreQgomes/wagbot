@@ -75,7 +75,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
       lib.wit_converse_api question, api_error_func, api_success_func
 
 controller.on 'facebook_postback', (bot, message) ->
-  console.log bot, message
+  console.log "Facebook postback: " + message
   bot.reply message, lib.clean message.payload
 
 
