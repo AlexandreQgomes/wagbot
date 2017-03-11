@@ -63,7 +63,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
         console.log "Body: #{body}"
         data = JSON.parse(body)
         if _.isEmpty data.entities
-          bot.reply message, lib.dont_know_message
+          bot.reply message, lib.dont_know_message()
           lib.log_no_kb_match message
         else
           if data.quickreplies then bot.reply message, lib.reply_with_buttons data
