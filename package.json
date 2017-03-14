@@ -15,8 +15,7 @@
   },
   "dependencies": {
     "botkit": "^0.4.10",
-    "botkit-middleware-witai": "0.0.2",
-    "botkit-storage-postgres": "git+ssh://git@github.com/mhjb/botkit-storage-postgres.git",
+    "botkit-storage-postgres": "^0.1.0",
     "coffee-script": "^1.12.3",
     "localtunnel": "^1.8.2",
     "momentjs": "^2.0.0",
