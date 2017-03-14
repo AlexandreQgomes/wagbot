@@ -111,7 +111,7 @@ module.exports =
     stats_db.query "select message_at from requests where \"user\" = $1 and no_kb_match is true and message_at is not null order by message_at desc limit 1", [user_id], (err, result) ->
       if result.rows[0]
         message_at = result.rows[0].message_at
-        func moment(message_at) < moment().subtract(10, 'seconds')
+        func moment(message_at) < moment().subtract(1, 'minute')
       else
         func true
 
