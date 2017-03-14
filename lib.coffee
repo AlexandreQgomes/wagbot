@@ -16,15 +16,15 @@ module.exports =
   dont_know_please_rephrase: "I'm sorry, I don't know. Perhaps try asking again with different words."
 
   dont_know_try_calling:
-    "attachment":
-      "type": "template"
-      "payload":
-        "template_type": "button"
-        "text": "Sorry, I don't know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?"
-        "buttons": [
-          "type": "phone_number"
-          "title": "📞 Student Rights"
-          "payload": "+64 800 499 488"
+    attachment:
+      type: 'template'
+      payload:
+        template_type: 'button'
+        text: 'Sorry, I don\'t know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?'
+        buttons: [
+          type: 'phone_number'
+          title: '📞 Student Rights'
+          payload: '0800 499 488'
         ]
 
   wit_converse_api: (question, api_error_func, api_success_func) ->
@@ -43,20 +43,24 @@ module.exports =
 
   parse_quick_replies: (quickreplies_from_wit) ->
     buttons = _.map quickreplies_from_wit, (text) ->
-      messenger_url = (text.match /http:\/\/m\.me\/\d+/i)
+      messenger_url = text.match /(.+) (https?:\/\/m\.me\/\d+)/i
+      phone_number = text.match /(.+) (0800.+)/
       if messenger_url
-        link_title = '💬 ' + (text.match /(.+) http:\/\/m\.me\/.+/i)[1]
         button =
           type: 'web_url'
-          url: messenger_url[0]
-          title: link_title
+          url: messenger_url[2]
+          title: '💬 ' + messenger_url[1]
+      else if phone_number
+        button =
+          type: 'phone_number'
+          title: '📞 ' + phone_number[1]
+          payload: phone_number[2]
       else
         button =
           type: 'postback'
           title: text
           payload: text
       button
-    console.log buttons
     buttons
 
   clean: (answer) ->
