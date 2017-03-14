@@ -83,15 +83,17 @@ module.exports =
         text: lib.clean api_response_data.msg
         buttons: lib.parse_quick_replies api_response_data.quickreplies
 
-  wit_no_match: (data) -> _.isEmpty data.entities
+  wit_no_match: (data) ->
+    _.isEmpty data.entities
 
-  log_request: (message) ->
-    stats_db.query "insert into requests (id, \"user\", channel, request, timestamp) values ($1,$2,$3,$4,$5)", [
+  log_request: (controller, message) ->
+    message_at = new Date(message.timestamp).toISOString()
+    stats_db.query "insert into requests (id, \"user\", channel, request, message_at) values ($1,$2,$3,$4,$5)", [
       message.mid
       message.user
       message.channel
       message.match.input
-      message.timestamp
+      message_at
     ]
 
   log_response: (message, data) ->
@@ -105,10 +107,13 @@ module.exports =
   log_no_kb_match: (controller, message) ->
     stats_db.query "update requests set no_kb_match = 'true' where id = $1", [message.mid]
 
-    controller.storage.users.save
-      id: message.user
-      last_no_match: moment()
-    , (err) -> if err then console.log "Storage error: #{err}"
+  was_last_request_this_session_matched: (user_id, func) ->
+    stats_db.query "select message_at from requests where \"user\" = $1 and no_kb_match is true and message_at is not null order by message_at desc limit 1", [user_id], (err, result) ->
+      if result.rows[0]
+        message_at = result.rows[0].message_at
+        func moment(message_at) < moment().subtract(10, 'seconds')
+      else
+        func true
 
   formatUptime: (uptime) ->
     unit = 'second'

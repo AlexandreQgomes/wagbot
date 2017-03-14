@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "botkit": "^0.4.10",
-    "botkit-storage-postgres": "^0.1.0",
     "coffee-script": "^1.12.3",
     "localtunnel": "^1.8.2",
     "momentjs": "^2.0.0",

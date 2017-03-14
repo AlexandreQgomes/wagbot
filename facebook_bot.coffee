@@ -8,8 +8,6 @@ localtunnel = require 'localtunnel'
 lib = require './lib'
 _ = require 'underscore'
 moment = require 'moment'
-botkitStoragePostgres = require 'botkit-storage-postgres'
-
 
 controller = Botkit.facebookbot
   debug: false
@@ -17,12 +15,7 @@ controller = Botkit.facebookbot
   access_token: process.env.page_token
   verify_token: process.env.verify_token
   app_secret: process.env.app_secret
-  validate_requests: true           # // Refuse any requests that don't come from FB on your receive webhook, must provide FB_APP_SECRET in environment variables
-  storage: botkitStoragePostgres
-    host: process.env.BOTKIT_STORAGE_POSTGRES_HOST
-    user: process.env.BOTKIT_STORAGE_POSTGRES_USER
-    password: process.env.BOTKIT_STORAGE_POSTGRES_PASSWORD
-    database: process.env.BOTKIT_STORAGE_POSTGRES_DATABASE
+  validate_requests: true
 
 bot = controller.spawn()
 
@@ -59,29 +52,26 @@ controller.api.thread_settings.delete_menu()
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
   bot.startTyping message, () ->
-    lib.log_request message
+    lib.log_request controller, message
 
     question = message.match.input
 
     if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
       bot.reply message, ":) I'm wagbot. I've been running for #{lib.formatUptime process.uptime()} on #{os.hostname()}"
     else
-      lib.wit_converse_api question, () ->
+      lib.wit_converse_api question
+      , () ->
         bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
       , (body) ->
         console.log "Body: #{body}"
         data = JSON.parse(body)
 
         if lib.wit_no_match data
-          controller.storage.users.get message.user, (err, user_data) ->
-            if user_data and user_data.last_no_match
-              if moment(user_data.last_no_match) < moment().subtract(10, 'seconds') # no_match in earlier session
-                bot.reply message, lib.dont_know_please_rephrase
-              else                                                                  # no_match this session
-                bot.reply message, lib.dont_know_try_calling
+          lib.was_last_request_this_session_matched message.user, (matched) ->
+            if matched
+              bot.reply message, lib.dont_know_please_rephrase
             else
-              bot.reply message, lib.dont_know_please_rephrase                      # never a no_match
-
+              bot.reply message, lib.dont_know_try_calling
             lib.log_no_kb_match controller, message
 
         else
