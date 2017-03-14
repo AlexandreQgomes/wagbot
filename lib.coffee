@@ -1,6 +1,7 @@
 pg = require 'pg'
 _ = require 'underscore'
 request = require 'request'
+moment = require 'moment'
 
 stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
 stats_db.connect()
@@ -12,6 +13,20 @@ truncate_to_word = (string, maxLength) ->
   truncatedString.concat ' …'
 
 module.exports =
+  dont_know_please_rephrase: "I'm sorry, I don't know. Perhaps try asking again with different words."
+
+  dont_know_try_calling:
+    "attachment":
+      "type": "template"
+      "payload":
+        "template_type": "button"
+        "text": "Sorry, I don't know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?"
+        "buttons": [
+          "type": "phone_number"
+          "title": "📞 Student Rights"
+          "payload": "+64 800 499 488"
+        ]
+
   wit_converse_api: (question, api_error_func, api_success_func) ->
     uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
     console.log "URI: #{uri}"
@@ -68,18 +83,7 @@ module.exports =
         text: lib.clean api_response_data.msg
         buttons: lib.parse_quick_replies api_response_data.quickreplies
 
-  dont_know_message: () ->
-    "attachment":
-      "type": "template"
-      "payload":
-        "template_type": "button"
-        "text": "Sorry, I don't know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?"
-        "buttons": [
-          "type": "phone_number"
-          "title": "📞 Student Rights"
-          "payload": "+64 800 499 488"
-        ]
-
+  wit_no_match: (data) -> _.isEmpty data.entities
 
   log_request: (message) ->
     stats_db.query "insert into requests (id, \"user\", channel, request, timestamp) values ($1,$2,$3,$4,$5)", [
@@ -98,8 +102,13 @@ module.exports =
       message.mid
     ]
 
-  log_no_kb_match: (message) ->
+  log_no_kb_match: (controller, message) ->
     stats_db.query "update requests set no_kb_match = 'true' where id = $1", [message.mid]
+
+    controller.storage.users.save
+      id: message.user
+      last_no_match: moment()
+    , (err) -> if err then console.log "Storage error: #{err}"
 
   formatUptime: (uptime) ->
     unit = 'second'
