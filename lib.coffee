@@ -4,29 +4,21 @@ request = require 'request'
 moment = require 'moment'
 
 stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
-stats_db.connect()
+stats_db.connect (err) ->
+  if err
+    console.log "Postgres connection error: #{err}"
+    process.exit 1
 
 # thanks http://stackoverflow.com/a/5454303
 truncate_to_word = (string, maxLength) ->
-  truncatedString = string.substring 0, maxLength
-  truncatedString = truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' '
-  truncatedString.concat ' …'
+  if string.length > maxLength
+    truncatedString = string.substring 0, maxLength
+    truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' '
+    truncatedString.concat ' …'
+  else
+    string
 
 module.exports =
-  dont_know_please_rephrase: "I'm sorry, I don't know. Perhaps try asking again with different words."
-
-  dont_know_try_calling:
-    attachment:
-      type: 'template'
-      payload:
-        template_type: 'button'
-        text: 'Sorry, I don\'t know. But I get cleverer all the time, so you might have more luck if you ask me again in a day or two. Meantime, want to talk to a human?'
-        buttons: [
-          type: 'phone_number'
-          title: '📞 Student Rights'
-          payload: '0800 499 488'
-        ]
-
   wit_converse_api: (question, api_error_func, api_success_func) ->
     uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
     console.log "URI: #{uri}"
@@ -41,27 +33,40 @@ module.exports =
         else
           api_success_func body
 
-  parse_quick_replies: (quickreplies_from_wit) ->
-    buttons = _.map quickreplies_from_wit, (text) ->
-      messenger_url = text.match /(.+) (https?:\/\/m\.me\/\d+)/i
-      phone_number = text.match /(.+) (0800.+)/
-      if messenger_url
-        button =
+  reply_with_buttons: (api_response_data) ->
+    text = truncate_to_word api_response_data.msg, 600
+    buttons =
+      _.map api_response_data.quickreplies, (text) ->
+        messenger_url = text.match /(.+) (https?:\/\/m\.me\/\d+)/i
+        page_url = text.match /(.+) (https?:\/\/.+)/i
+        phone_number = text.match /(.+) (0800.+)/
+        if messenger_url
           type: 'web_url'
           url: messenger_url[2]
           title: '💬 ' + messenger_url[1]
-      else if phone_number
-        button =
+        else if page_url
+          type: 'web_url'
+          url: page_url[2]
+          title: '🔗 ' + page_url[1]
+        else if phone_number
           type: 'phone_number'
           title: '📞 ' + phone_number[1]
           payload: phone_number[2]
-      else
-        button =
+        else
           type: 'postback'
           title: text
           payload: text
-      button
-    buttons
+    if text.length > 600
+      buttons.push
+        type: 'postback'
+        title: 'Tell me more'
+        payload: api_response_data.msg.substring text.length - 2
+    attachment:
+      type: 'template'
+      payload:
+        template_type: 'button'
+        text: text
+        buttons: buttons
 
   clean: (answer) ->
     if answer.length > 600
@@ -78,14 +83,6 @@ module.exports =
           ]
     else
       return answer
-
-  reply_with_buttons: (api_response_data) ->
-    attachment:
-      type: 'template'
-      payload:
-        template_type: 'button'
-        text: lib.clean api_response_data.msg
-        buttons: lib.parse_quick_replies api_response_data.quickreplies
 
   wit_no_match: (data) ->
     _.isEmpty data.entities
@@ -118,22 +115,5 @@ module.exports =
         func moment(message_at) < moment().subtract(1, 'minute')
       else
         func true
-
-  formatUptime: (uptime) ->
-    unit = 'second'
-    if uptime > 60
-      uptime = uptime / 60
-      unit = 'minute'
-    if uptime > 60
-      uptime = uptime / 60
-      unit = 'hour'
-
-    uptime = Math.round(uptime)
-
-    if uptime isnt 1
-      unit = unit + 's'
-
-    uptime = uptime + ' ' + unit
-    uptime
 
 lib = module.exports
