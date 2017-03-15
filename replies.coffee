@@ -8,14 +8,9 @@ formatUptime = (uptime) ->
   if uptime > 60
     uptime = uptime / 60
     unit = 'hour'
-
   uptime = Math.round(uptime)
-
-  if uptime isnt 1
-    unit = unit + 's'
-
-  uptime = uptime + ' ' + unit
-  uptime
+  if uptime isnt 1 then unit += 's'
+  uptime + ' ' + unit
 
 module.exports =
   dont_know_please_rephrase: "I'm sorry, I don't know. Perhaps try asking again with different words."
@@ -32,4 +27,5 @@ module.exports =
           payload: '0800 499 488'
         ]
 
-  uptime: ":) I'm wagbot. I've been running for #{formatUptime process.uptime()} on #{os.hostname()}"
+  uptime: () ->
+    "I'm Wagbot. I've been running for #{formatUptime process.uptime()} on #{os.hostname()}"

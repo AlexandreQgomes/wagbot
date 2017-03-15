@@ -46,7 +46,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
     question = message.match.input
 
     if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
-      bot.reply message, replies.uptime
+      bot.reply message, replies.uptime()
     else
       lib.wit_converse_api question
       , () ->
