@@ -4,10 +4,11 @@ if not (process.env.page_token and process.env.verify_token and process.env.app_
 
 Botkit = require 'botkit'
 ngrok = require 'ngrok'
+_ = require 'underscore'
+
 lib = require './lib'
 replies = require './replies'
-_ = require 'underscore'
-moment = require 'moment'
+logging = require './logging'
 
 controller = Botkit.facebookbot
   debug: false
@@ -41,7 +42,7 @@ controller.api.thread_settings.delete_menu()
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
   bot.startTyping message, () ->
-    lib.log_request controller, message
+    logging.log_request message
 
     question = message.match.input
 
@@ -56,12 +57,13 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
         data = JSON.parse(body)
 
         if lib.wit_no_match data
-          lib.was_last_request_this_session_matched message.user, (matched) ->
+          logging.was_last_request_this_session_matched message.user, (matched) ->
             if matched
               bot.reply message, replies.dont_know_please_rephrase
             else
-              bot.reply message, replies.dont_know_try_calling
-            lib.log_no_kb_match controller, message
+              logging.how_many_questions message.user, (n) ->
+                bot.reply message, replies.dont_know_training n
+            logging.log_no_kb_match message
 
         else
           if data.quickreplies
@@ -69,7 +71,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
           else
             bot.reply message, lib.clean data.msg
 
-          lib.log_response message, data
+          logging.log_response message, data
 
 controller.on 'facebook_postback', (bot, message) ->
   console.log "Facebook postback: "

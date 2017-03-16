@@ -1,13 +1,5 @@
-pg = require 'pg'
 _ = require 'underscore'
 request = require 'request'
-moment = require 'moment'
-
-stats_db = new pg.Client(process.env.DATABASE_URL or 'postgres://localhost:5432/wagbot';)
-stats_db.connect (err) ->
-  if err
-    console.log "Postgres connection error: #{err}"
-    process.exit 1
 
 # thanks http://stackoverflow.com/a/5454303
 truncate_to_word = (string, maxLength) ->
@@ -86,34 +78,5 @@ module.exports =
 
   wit_no_match: (data) ->
     _.isEmpty data.entities
-
-  log_request: (controller, message) ->
-    message_at = new Date(message.timestamp).toISOString()
-    stats_db.query "insert into requests (id, \"user\", channel, request, message_at) values ($1,$2,$3,$4,$5)", [
-      message.mid
-      message.user
-      message.channel
-      message.match.input
-      message_at
-    ]
-
-  log_response: (message, data) ->
-    stats_db.query "update requests set response = $1, score = $2, intent = $3 where id = $4", [
-      data.msg
-      if data.entities.intent then data.entities.intent[0].confidence else null
-      data.entities.intent[0].value
-      message.mid
-    ]
-
-  log_no_kb_match: (controller, message) ->
-    stats_db.query "update requests set no_kb_match = 'true' where id = $1", [message.mid]
-
-  was_last_request_this_session_matched: (user_id, func) ->
-    stats_db.query "select message_at from requests where \"user\" = $1 and no_kb_match is true and message_at is not null order by message_at desc limit 1", [user_id], (err, result) ->
-      if result.rows[0]
-        message_at = result.rows[0].message_at
-        func moment(message_at) < moment().subtract(1, 'minute')
-      else
-        func true
 
 lib = module.exports
