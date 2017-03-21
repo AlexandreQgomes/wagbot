@@ -1,14 +1,18 @@
-if not (process.env.page_token and process.env.verify_token and process.env.app_secret and process.env.wit_client_token)
-  console.log 'Error: Specify page_token, verify_token, app_secret, wit_client_token in environment'
+if not (process.env.page_token and process.env.verify_token and process.env.app_secret and process.env.apiai_client_token)
+  console.log 'Error: Specify page_token, verify_token, app_secret, apiai_client_token in environment'
   process.exit 1
 
 Botkit = require 'botkit'
+apiaibotkit = require 'api-ai-botkit'
 ngrok = require 'ngrok'
 _ = require 'underscore'
 
 lib = require './lib'
 replies = require './replies'
 logging = require './logging'
+
+
+apiai = apiaibotkit process.env.apiai_client_token
 
 controller = Botkit.facebookbot
   debug: false
@@ -49,29 +53,25 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
     if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
       bot.reply message, replies.uptime()
     else
-      lib.wit_converse_api question
-      , () ->
-        bot.reply message, "Sorry, something went wrong :'( — error # #{err}"
-      , (body) ->
-        console.log "Body: #{body}"
-        data = JSON.parse(body)
+      apiai.process message, bot
 
-        if lib.wit_no_match data
-          logging.was_last_request_this_session_matched message.user, (matched) ->
-            if matched
-              bot.reply message, replies.dont_know_please_rephrase
-            else
-              logging.how_many_questions message.user, (n) ->
-                bot.reply message, replies.dont_know_training n
-            logging.log_no_kb_match message
+apiai
+  .all (message, resp, bot) ->
+    console.log JSON.stringify resp, null, 4
 
+    if lib.apiai_no_match resp
+      logging.was_last_request_this_session_matched message.user, (matched) ->
+        if matched
+          bot.reply message, replies.dont_know_please_rephrase
         else
-          if data.quickreplies
-            bot.reply message, lib.reply_with_buttons data
-          else
-            bot.reply message, lib.clean data.msg
+          logging.how_many_questions message.user, (n) ->
+            bot.reply message, replies.dont_know_training n
+        logging.log_no_kb_match message
 
-          logging.log_response message, data
+    else if not resp.result.action
+      bot.reply message, lib.clean resp.result.fulfillment.speech
+      logging.log_response message, resp
+
 
 controller.on 'facebook_postback', (bot, message) ->
   console.log "Facebook postback: "

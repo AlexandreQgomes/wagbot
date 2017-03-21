@@ -11,6 +11,9 @@ truncate_to_word = (string, maxLength) ->
     string
 
 module.exports =
+  apiai_no_match: (resp) ->
+    resp.result.fulfillment.speech is ""
+
   wit_converse_api: (question, api_error_func, api_success_func) ->
     uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
     console.log "URI: #{uri}"

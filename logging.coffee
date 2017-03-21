@@ -24,11 +24,11 @@ module.exports =
     , [message.user]
     , (err, result) -> if err then console.log err
 
-  log_response: (message, data) ->
+  log_response: (message, resp) ->
     db.query "update requests set response = $1, score = $2, intent = $3 where id = $4", [
-      data.msg
-      if data.entities.intent then data.entities.intent[0].confidence else null
-      data.entities.intent[0].value
+      resp.result.fulfillment.speech
+      resp.result.score
+      resp.result.metadata.intentName
       message.mid
     ]
 

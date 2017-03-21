@@ -14,6 +14,7 @@
     "url": "git@github.com:mhjb/pas-bot.git"
   },
   "dependencies": {
+    "api-ai-botkit": "^1.1.1",
     "botkit": "^0.4.10",
     "coffee-script": "^1.12.3",
     "momentjs": "^2.0.0",
