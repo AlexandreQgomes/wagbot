@@ -74,7 +74,7 @@ module.exports =
           buttons: [
             type: 'postback'
             title: 'Tell me more'
-            payload: answer.substring trimmedAnswer.length - 2
+            payload: answer.substring trimmedAnswer.length - 2, trimmedAnswer.length + 998
           ]
     else
       return answer
