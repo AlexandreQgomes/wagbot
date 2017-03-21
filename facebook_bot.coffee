@@ -68,7 +68,8 @@ apiai
             bot.reply message, replies.dont_know_training n
         logging.log_no_kb_match message
 
-    else if not resp.result.action
+    # else if not resp.result.action
+    else
       bot.reply message, lib.clean resp.result.fulfillment.speech
       logging.log_response message, resp
 
