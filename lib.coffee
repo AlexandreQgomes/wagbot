@@ -16,7 +16,7 @@ module.exports =
     console.log "URI: #{uri}"
     request
       headers:
-        'Authorization': "Bearer #{process.env.wit_client_token}"
+        Authorization: "Bearer #{process.env.wit_client_token}"
         'Content-Type': 'application/json'
       uri: uri
       method: 'POST'

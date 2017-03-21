@@ -33,8 +33,9 @@ module.exports =
     ]
 
   log_no_kb_match: (message) ->
-    last_no_match_at = new Date(message.timestamp).toISOString()
     db.query "update requests set no_kb_match = 'true' where id = $1", [message.mid]
+
+    last_no_match_at = new Date(message.timestamp).toISOString()
     db.query "insert into users (id, last_no_match_at) values ($1, $2) on conflict (id) do update set last_no_match_at = $2", [
       message.user
       last_no_match_at
