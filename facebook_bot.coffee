@@ -78,22 +78,3 @@ controller.on 'facebook_postback', (bot, message) ->
   console.log "Facebook postback: "
   console.log message
   bot.reply message, lib.clean message.payload
-
-
-controller.hears ['shutdown'], 'message_received', (bot, message) ->
-  bot.startConversation message, (err, convo) ->
-    convo.ask 'Are you sure you want me to shutdown?', [
-      pattern: bot.utterances.yes
-      callback: (response, convo) ->
-        convo.say 'Bye!'
-        convo.next()
-        setTimeout () ->
-          process.exit()
-        , 3000
-    ,
-      pattern: bot.utterances.no
-      default: true
-      callback: (response, convo) ->
-        convo.say '*Phew!*'
-        convo.next()
-    ]
