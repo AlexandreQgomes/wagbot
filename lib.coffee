@@ -5,8 +5,9 @@ request = require 'request'
 truncate_to_word = (string, maxLength) ->
   if string.length > maxLength
     truncatedString = string.substring 0, maxLength
-    truncatedString.substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' '
-    truncatedString.concat ' …'
+    truncatedString = truncatedString
+      .substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' '
+      .concat ' …'
   else
     string
 
