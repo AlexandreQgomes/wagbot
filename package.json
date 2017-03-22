@@ -1,5 +1,5 @@
 {
-  "name": "pasbot",
+  "name": "wagbot",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,7 +11,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git@github.com:mhjb/pas-bot.git"
+    "url": "git@github.com:mhjb/wagbot.git"
   },
   "dependencies": {
     "api-ai-botkit": "^1.1.1",

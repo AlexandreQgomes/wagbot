@@ -5,7 +5,7 @@ request = require 'request'
 truncate_to_word = (string, maxLength) ->
   if string.length > maxLength
     truncatedString = string.substring 0, maxLength
-    truncatedString = truncatedString
+    truncatedString
       .substring 0, Math.min truncatedString.length, truncatedString.lastIndexOf ' '
       .concat ' …'
   else
@@ -14,20 +14,6 @@ truncate_to_word = (string, maxLength) ->
 module.exports =
   apiai_no_match: (resp) ->
     resp.result.fulfillment.speech is ""
-
-  wit_converse_api: (question, api_error_func, api_success_func) ->
-    uri = "https://api.wit.ai/converse?v=20160526&session_id=#{Math.random().toString(36).substring(2,11)}&q=#{question}"
-    console.log "URI: #{uri}"
-    request
-      headers:
-        Authorization: "Bearer #{process.env.wit_client_token}"
-        'Content-Type': 'application/json'
-      uri: uri
-      method: 'POST'
-      , (err, res, body) ->
-        if err then api_error_func
-        else
-          api_success_func body
 
   reply_with_buttons: (api_response_data) ->
     text = truncate_to_word api_response_data.msg, 600
@@ -80,7 +66,5 @@ module.exports =
     else
       return answer
 
-  wit_no_match: (data) ->
-    _.isEmpty data.entities
 
 lib = module.exports
