@@ -15,11 +15,16 @@ module.exports =
   apiai_no_match: (resp) ->
     resp.result.fulfillment.speech is ""
 
+  apiai_resp_has_quick_replies: (resp) ->
+    resp.result.fulfillment.messages and resp.result.fulfillment.messages.length > 1 and resp.result.fulfillment.messages[1].title.length > 0
+
   reply_with_buttons: (api_response_data) ->
-    text = truncate_to_word api_response_data.msg, 600
+    full_text = api_response_data.result.fulfillment.speech
+    text = truncate_to_word full_text, 600
+    quick_replies = api_response_data.result.fulfillment.messages[1].title.split /; ?/
     buttons =
-      _.map api_response_data.quickreplies, (text) ->
-        messenger_url = text.match /(.+) (https?:\/\/m\.me\/\d+)/i
+      _.map quick_replies, (text) ->
+        messenger_url = text.match /(.+) (https?:\/\/m\.me\/.+)/i
         page_url = text.match /(.+) (https?:\/\/.+)/i
         phone_number = text.match /(.+) (0800.+)/
         if messenger_url
@@ -42,7 +47,7 @@ module.exports =
       buttons.push
         type: 'postback'
         title: 'Tell me more'
-        payload: api_response_data.msg.substring text.length - 2
+        payload: full_text.substring text.length - 2
     attachment:
       type: 'template'
       payload:

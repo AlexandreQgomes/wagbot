@@ -16,7 +16,7 @@ apiai = apiaibotkit process.env.apiai_client_token
 
 controller = Botkit.facebookbot
   debug: false
-  log: true
+  log: false
   access_token: process.env.page_token
   verify_token: process.env.verify_token
   app_secret: process.env.app_secret
@@ -68,10 +68,12 @@ apiai
             bot.reply message, replies.dont_know_training n
         logging.log_no_kb_match message
 
-    # else if not resp.result.action
     else
-      bot.reply message, lib.clean resp.result.fulfillment.speech
-      logging.log_response message, resp
+      if lib.apiai_resp_has_quick_replies resp
+        bot.reply message, lib.reply_with_buttons resp
+      else
+        bot.reply message, lib.clean resp.result.fulfillment.speech
+        logging.log_response message, resp
 
 
 controller.on 'facebook_postback', (bot, message) ->
