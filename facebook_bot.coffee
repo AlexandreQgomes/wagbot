@@ -39,8 +39,8 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
         console.log "Your bot is available at #{url}/facebook/receive"
 
 
-controller.api.thread_settings.greeting "Hi :), I'm wagbot, an experimental Community Law project. I'm pretty dumb, but I can answer some questions about problems at school."
-controller.api.thread_settings.get_started "Try asking something like 'Can I be punished for not wearing the uniform?' or 'What happens to parents if their children wag school?'"
+controller.api.thread_settings.greeting replies.greeting
+controller.api.thread_settings.get_started replies.get_started
 controller.api.thread_settings.delete_menu()
 
 
