@@ -64,8 +64,9 @@ apiai
         if matched
           bot.reply message, replies.dont_know_please_rephrase
         else
-          logging.how_many_questions message.user, (n) ->
-            bot.reply message, replies.dont_know_training n
+          # logging.how_many_questions message.user, (n) ->
+          #   bot.reply message, replies.dont_know_training n
+          bot.reply message, replies.dont_know_try_calling
         logging.log_no_kb_match message
 
     else
