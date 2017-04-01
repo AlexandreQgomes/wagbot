@@ -56,20 +56,27 @@ module.exports =
         buttons: buttons
 
   clean: (answer) ->
-    if answer.length > 600
-      trimmedAnswer = truncate_to_word answer, 600
-      return attachment:
-        type: 'template'
-        payload:
-          template_type: 'button'
-          text: trimmedAnswer
-          buttons: [
-            type: 'postback'
-            title: 'Tell me more'
-            payload: answer.substring trimmedAnswer.length - 2, trimmedAnswer.length + 998
-          ]
-    else
+    more_position = answer.search /\[more\]/i
+
+    if more_position is -1 and answer.length < 600
       return answer
+    else if more_position isnt -1
+      trimmedAnswer = answer.substring 0, more_position
+      residualAnswer = answer.substring trimmedAnswer.length + 6, trimmedAnswer.length + 998
+    else
+      trimmedAnswer = truncate_to_word answer, 600
+      residualAnswer = answer.substring trimmedAnswer.length - 2, trimmedAnswer.length + 998
+
+    return attachment:
+      type: 'template'
+      payload:
+        template_type: 'button'
+        text: trimmedAnswer
+        buttons: [
+          type: 'postback'
+          title: 'Tell me more'
+          payload: residualAnswer
+        ]
 
 
 lib = module.exports
