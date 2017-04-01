@@ -50,7 +50,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
 
     question = message.match.input
 
-    if question.match /uptime|identify yourself|who are you|what is your name|what's your name/i
+    if question.match /uptime/i
       bot.reply message, replies.uptime()
     else
       apiai.process message, bot
