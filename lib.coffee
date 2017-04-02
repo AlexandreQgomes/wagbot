@@ -13,15 +13,27 @@ truncate_to_word = (string, maxLength) ->
 
 module.exports =
   apiai_no_match: (resp) ->
-    resp.result.fulfillment.speech is ""
+    resp.result.fulfillment.speech is "" and not _.has resp.result.fulfillment, 'messages'
 
   apiai_resp_has_quick_replies: (resp) ->
-    resp.result.fulfillment.messages and resp.result.fulfillment.messages.length > 1 and resp.result.fulfillment.messages[1].title.length > 0
+    quick_replies = _.filter resp.result.fulfillment.messages, (message) ->
+      message.title and message.title.length > 0
+    if quick_replies.length then true else false
+
+  apiai_resp_has_image: (api_response_data) ->
+    _.findWhere api_response_data.result.fulfillment.messages, type: 3
+
+  reply_with_image: (api_response_data) ->
+    attachment:
+      type: 'image'
+      payload:
+        url: (_.findWhere api_response_data.result.fulfillment.messages, type: 3).imageUrl
 
   reply_with_buttons: (api_response_data) ->
     full_text = api_response_data.result.fulfillment.speech
     text = truncate_to_word full_text, 600
-    quick_replies = api_response_data.result.fulfillment.messages[1].title.split /; ?/
+    quick_reply_message = _.findWhere api_response_data.result.fulfillment.messages, type: 2
+    quick_replies = quick_reply_message.title.split /; ?/
     buttons =
       _.map quick_replies, (text) ->
         messenger_url = text.match /(.+) (https?:\/\/m\.me\/.+)/i
@@ -55,7 +67,7 @@ module.exports =
         text: text
         buttons: buttons
 
-  clean: (answer) ->
+  prep_reply: (answer) ->
     more_position = answer.search /\[more\]/i
 
     if more_position is -1 and answer.length < 600

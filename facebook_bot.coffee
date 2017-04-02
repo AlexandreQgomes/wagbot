@@ -48,9 +48,7 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
   bot.startTyping message, () ->
     logging.log_request message
 
-    question = message.match.input
-
-    if question.match /uptime/i
+    if message.match.input.match /uptime/i
       bot.reply message, replies.uptime()
     else
       apiai.process message, bot
@@ -72,12 +70,14 @@ apiai
     else
       if lib.apiai_resp_has_quick_replies resp
         bot.reply message, lib.reply_with_buttons resp
+      else if lib.apiai_resp_has_image resp
+        bot.reply message, lib.reply_with_image resp
       else
-        bot.reply message, lib.clean resp.result.fulfillment.speech
+        bot.reply message, lib.prep_reply resp.result.fulfillment.speech
         logging.log_response message, resp
 
 
 controller.on 'facebook_postback', (bot, message) ->
   console.log "Facebook postback: "
   console.log message
-  bot.reply message, lib.clean message.payload
+  bot.reply message, lib.prep_reply message.payload
