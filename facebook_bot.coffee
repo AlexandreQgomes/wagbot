@@ -58,7 +58,7 @@ apiai
     console.log JSON.stringify resp, null, 4
 
     if lib.apiai_no_match resp
-      logging.was_last_request_this_session_matched message.user, (matched) ->
+      logging.was_a_request_not_matched_last_minute message.user, (matched) ->
         if matched
           bot.reply message, replies.dont_know_please_rephrase
         else

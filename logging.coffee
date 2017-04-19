@@ -41,14 +41,11 @@ module.exports =
       last_no_match_at
     ], (err, result) -> if err then console.log err
 
-  was_last_request_this_session_matched: (user_id, func) ->
-    db.query "select last_no_match_at from users where id = $1 limit 1", [user_id], (err, result) ->
+  was_a_request_not_matched_last_minute: (user_id, func) ->
+    db.query "select last_no_match_at < now() - '1 minute'::interval no_match_last_min from users where id = $1 limit 1", [user_id], (err, result) ->
+      console.log result
       if err then console.log err
-      else if result.rows[0]
-        message_at = result.rows[0].message_at
-        func moment(message_at) < moment().subtract(1, 'minute')
-      else
-        func true
+      func result.rows[0] and result.rows[0].no_match_last_min
 
   how_many_questions: (user_id, func) ->
     db.query "select requests from users where id = $1 limit 1", [user_id], (err, result) ->
