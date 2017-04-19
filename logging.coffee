@@ -43,7 +43,6 @@ module.exports =
 
   was_a_request_not_matched_last_minute: (user_id, func) ->
     db.query "select last_no_match_at < now() - '1 minute'::interval no_match_last_min from users where id = $1 limit 1", [user_id], (err, result) ->
-      console.log result
       if err then console.log err
       func result.rows[0] and result.rows[0].no_match_last_min
 

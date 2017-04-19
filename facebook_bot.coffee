@@ -71,6 +71,8 @@ apiai
       if lib.apiai_resp_has_quick_replies resp
         bot.reply message, lib.reply_with_buttons resp
       else if lib.apiai_resp_has_image resp
+        if resp.result.fulfillment.speech
+          bot.reply message, lib.prep_reply resp.result.fulfillment.speech
         bot.reply message, lib.reply_with_image resp
       else
         bot.reply message, lib.prep_reply resp.result.fulfillment.speech
