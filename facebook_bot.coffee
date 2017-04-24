@@ -53,6 +53,10 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
     else
       apiai.process message, bot
 
+# after a message is not matched; then 3 minutes later, once a day,
+# send a message "want me to get someone to follow up?" (just send 'followupuser')
+# then it will need to email somone (https://nodemailer.com/)
+
 apiai
   .all (message, resp, bot) ->
     console.log JSON.stringify resp, null, 4
