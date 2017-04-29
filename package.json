@@ -17,6 +17,7 @@
     "api-ai-botkit": "^1.1.1",
     "botkit": "^0.4.10",
     "coffee-script": "^1.12.3",
+    "dashbot": "^0.8.6",
     "momentjs": "^2.0.0",
     "ngrok": "^2.2.6",
     "os": "^0.1.1",

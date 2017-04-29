@@ -1,11 +1,12 @@
-if not (process.env.page_token and process.env.verify_token and process.env.app_secret and process.env.apiai_client_token)
-  console.log 'Error: Specify page_token, verify_token, app_secret, apiai_client_token in environment'
+if not (process.env.page_token and process.env.verify_token and process.env.app_secret and process.env.apiai_client_token and process.env.DASHBOT_API_KEY)
+  console.log 'Error: Specify page_token, verify_token, app_secret, apiai_client_token, and DASHBOT_API_KEY in environment'
   process.exit 1
 
 Botkit = require 'botkit'
 apiaibotkit = require 'api-ai-botkit'
 ngrok = require 'ngrok'
 _ = require 'underscore'
+dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook
 
 lib = require './lib'
 replies = require './replies'
@@ -21,6 +22,9 @@ controller = Botkit.facebookbot
   verify_token: process.env.verify_token
   app_secret: process.env.app_secret
   validate_requests: true
+
+controller.middleware.receive.use dashbot.receive
+controller.middleware.send.use dashbot.send
 
 bot = controller.spawn()
 
