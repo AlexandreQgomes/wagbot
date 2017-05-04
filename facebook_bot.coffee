@@ -70,8 +70,6 @@ apiai
         if matched
           bot.reply message, replies.dont_know_please_rephrase
         else
-          # logging.how_many_questions message.user, (n) ->
-          #   bot.reply message, replies.dont_know_training n
           bot.reply message, replies.dont_know_try_calling
         logging.log_no_kb_match message
 
@@ -83,7 +81,12 @@ apiai
           bot.reply message, lib.prep_reply resp.result.fulfillment.speech
         bot.reply message, lib.reply_with_image resp
       else
-        bot.reply message, lib.prep_reply resp.result.fulfillment.speech
+        bot.startConversation message, (response, convo) ->     # https://github.com/howdyai/botkit/issues/543#issue-194748804
+          _.each resp.result.fulfillment.messages, (m) ->
+            if m.type is 0 and m.speech
+              convo.say lib.prep_reply m.speech
+
+
         logging.log_response message, resp
 
 
