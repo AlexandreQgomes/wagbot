@@ -16,7 +16,7 @@ logging = require './logging'
 apiai = apiaibotkit process.env.apiai_client_token
 
 controller = Botkit.facebookbot
-  debug: false
+  debug: true
   log: false
   access_token: process.env.page_token
   verify_token: process.env.verify_token
@@ -81,11 +81,14 @@ apiai
           bot.reply message, lib.prep_reply resp.result.fulfillment.speech
         bot.reply message, lib.reply_with_image resp
       else
-        bot.startConversation message, (response, convo) ->     # https://github.com/howdyai/botkit/issues/543#issue-194748804
-          _.each resp.result.fulfillment.messages, (m) ->
+        if not resp.result.fulfillment.messages
+          bot.reply message, lib.prep_reply resp.result.fulfillment.speech
+        else
+          _.each resp.result.fulfillment.messages, (m, i) ->
             if m.type is 0 and m.speech
-              convo.say lib.prep_reply m.speech
-
+              setTimeout () ->
+                bot.reply message, lib.prep_reply m.speech
+              , i * 1000   # 1 second delay for each message over 1
 
         logging.log_response message, resp
 
