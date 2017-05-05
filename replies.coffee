@@ -17,7 +17,7 @@ module.exports =
 
   get_started: "I can answer some questions about problems at schools. Try asking something like 'Can I be punished for not wearing the uniform?' or 'What happens to parents if their children wag school?' I'm still in training though, so there's heaps I don't know!"
 
-  dont_know_please_rephrase: "I'm sorry, I don't know. Perhaps try asking again with different words."
+  dont_know_please_rephrase: "I'm sorry, I don't know. Mind asking again with different words?"
 
   dont_know_training: (n) ->
     if n < 2
