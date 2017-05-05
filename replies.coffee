@@ -45,4 +45,8 @@ module.exports =
       title:'Privacy policy'
       type: 'web_url'
       url: 'http://www.wclc.org.nz/privacy-confidentiality/'
+    ,
+      title:'Student Rights Service'
+      type: 'web_url'
+      url: 'http://www.wclc.org.nz/student-rights-service/'
     ]
