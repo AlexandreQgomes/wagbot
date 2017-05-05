@@ -16,7 +16,7 @@ logging = require './logging'
 apiai = apiaibotkit process.env.apiai_client_token
 
 controller = Botkit.facebookbot
-  debug: true
+  debug: false
   log: false
   access_token: process.env.page_token
   verify_token: process.env.verify_token
@@ -45,8 +45,8 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
 
 controller.api.thread_settings.greeting replies.greeting
 controller.api.thread_settings.get_started replies.get_started
-controller.api.thread_settings.delete_menu()
-
+# controller.api.thread_settings.delete_menu()
+controller.api.thread_settings.menu replies.menu
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
   bot.startTyping message, () ->
@@ -56,10 +56,6 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
       bot.reply message, replies.uptime()
     else
       apiai.process message, bot
-
-# after a message is not matched; then 3 minutes later, once a day,
-# send a message "want me to get someone to follow up?" (just send 'followupuser')
-# then it will need to email somone (https://nodemailer.com/)
 
 apiai
   .all (message, resp, bot) ->

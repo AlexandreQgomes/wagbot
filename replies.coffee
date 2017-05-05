@@ -39,3 +39,10 @@ module.exports =
 
   uptime: () ->
     "I'm Wagbot. I've been running for #{formatUptime process.uptime()} on #{os.hostname()}"
+
+  menu:
+    [
+      title:'Privacy policy'
+      type: 'web_url'
+      url: 'http://www.wclc.org.nz/privacy-confidentiality/'
+    ]
