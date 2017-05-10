@@ -7,11 +7,9 @@ apiaibotkit = require 'api-ai-botkit'
 ngrok = require 'ngrok'
 _ = require 'underscore'
 dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook
-
 lib = require './lib'
 replies = require './replies'
 logging = require './logging'
-
 
 apiai = apiaibotkit process.env.apiai_client_token
 
@@ -43,6 +41,7 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
         console.log "Your bot is available at #{url}/facebook/receive"
 
 
+# controller.api.thread_settings.delete_greeting()
 controller.api.thread_settings.greeting replies.greeting
 controller.api.thread_settings.get_started replies.get_started
 # controller.api.thread_settings.delete_menu()

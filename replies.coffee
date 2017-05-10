@@ -13,9 +13,9 @@ formatUptime = (uptime) ->
   uptime + ' ' + unit
 
 module.exports =
-  greeting: "Hi :), I'm wagbot, an experimental Community Law prototype. I'm still in training, but I can answer *some* questions about problems at school."
+  greeting: "Hi :) I'm a chatbot trained by Community Law to answer some questions about problems at school."
 
-  get_started: "I can answer some questions about problems at schools. Try asking something like 'Can I be punished for not wearing the uniform?' or 'What happens to parents if their children wag school?' I'm still in training though, so there's heaps I don't know!"
+  get_started: "I can answer some questions about problems at schools. What's the biggest issue for you with school at the moment?"
 
   dont_know_please_rephrase: "I'm sorry, I don't know. Mind asking again with different words?"
 

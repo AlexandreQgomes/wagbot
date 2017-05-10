@@ -24,10 +24,11 @@ module.exports =
     _.findWhere api_response_data.result.fulfillment.messages, type: 3
 
   reply_with_image: (api_response_data) ->
+    url = (_.sample (_.where api_response_data.result.fulfillment.messages, type: 3)).imageUrl
     attachment:
       type: 'image'
       payload:
-        url: (_.findWhere api_response_data.result.fulfillment.messages, type: 3).imageUrl
+        url: url
 
   reply_with_buttons: (api_response_data) ->
     full_text = api_response_data.result.fulfillment.speech
