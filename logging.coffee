@@ -12,7 +12,7 @@ module.exports =
     message_at = new Date(message.timestamp).toISOString()
     db.query "insert into requests (id, \"user\", channel, request, message_at) values ($1,$2,$3,$4,$5);"
     , [
-      message.mid
+      if message.mid then message.mid else 0
       message.user
       message.channel
       message.match.input

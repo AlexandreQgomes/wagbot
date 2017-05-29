@@ -53,7 +53,9 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
 
 apiai
   .all (message, resp, bot) ->
-    console.log JSON.stringify resp, null, 4
+    console.log "—————————————————"
+    console.log resp
+    console.log "—————————————————"
 
     if lib.apiai_no_match resp
       logging.was_a_request_not_matched_last_minute message.user, (matched) ->
