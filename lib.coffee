@@ -31,6 +31,7 @@ module.exports =
         url: url
 
   reply_with_buttons: (api_response_data) ->
+    console.log api_response_data
     full_text = api_response_data.result.fulfillment.speech
     text = truncate_to_word full_text, 600
     quick_reply_message = _.findWhere api_response_data.result.fulfillment.messages, type: 2
@@ -60,7 +61,7 @@ module.exports =
       buttons.push
         type: 'postback'
         title: 'Tell me more'
-        payload: full_text.substring text.length - 2
+        payload: 'TELL_ME_MORE:' + full_text.substring text.length - 2
     attachment:
       type: 'template'
       payload:
@@ -75,10 +76,10 @@ module.exports =
       return answer
     else if more_position isnt -1
       trimmedAnswer = answer.substring 0, more_position
-      residualAnswer = answer.substring trimmedAnswer.length + 6, trimmedAnswer.length + 998
+      residualAnswer = answer.substring trimmedAnswer.length + 6, trimmedAnswer.length + 985
     else
       trimmedAnswer = truncate_to_word answer, 600
-      residualAnswer = answer.substring trimmedAnswer.length - 2, trimmedAnswer.length + 998
+      residualAnswer = answer.substring trimmedAnswer.length - 2, trimmedAnswer.length + 985
 
     return attachment:
       type: 'template'
@@ -88,7 +89,7 @@ module.exports =
         buttons: [
           type: 'postback'
           title: 'Tell me more'
-          payload: residualAnswer
+          payload: 'TELL_ME_MORE:' + residualAnswer
         ]
 
 

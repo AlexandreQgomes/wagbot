@@ -19,6 +19,7 @@ controller = Botkit.facebookbot
   verify_token: process.env.verify_token
   app_secret: process.env.app_secret
   validate_requests: true
+  receive_via_postback: true
 
 controller.middleware.receive.use dashbot.receive
 controller.middleware.send.use dashbot.send
@@ -39,13 +40,16 @@ controller.api.thread_settings.get_started replies.get_started
 controller.api.thread_settings.menu replies.menu
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
-  bot.startTyping message, () ->
-    logging.log_request message
+  if message.type is 'facebook_postback' and message.text.substring(0,13) == 'TELL_ME_MORE:'
+    bot.reply message, lib.prep_reply message.text.substring 13
+  else
+    bot.startTyping message, () ->
+      logging.log_request message
 
-    if message.match.input.match /uptime/i
-      bot.reply message, replies.uptime()
-    else
-      apiai.process message, bot
+      if message.match.input.match /uptime/i
+        bot.reply message, replies.uptime()
+      else
+        apiai.process message, bot
 
 apiai
   .all (message, resp, bot) ->
@@ -77,9 +81,3 @@ apiai
               , i * 1000   # 1 second delay for each message over 1
 
         logging.log_response message, resp
-
-
-controller.on 'facebook_postback', (bot, message) ->
-  console.log "Facebook postback: "
-  console.log message
-  bot.reply message, lib.prep_reply message.payload
