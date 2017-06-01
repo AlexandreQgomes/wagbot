@@ -13,7 +13,7 @@ logging = require './logging'
 apiai = apiaibotkit process.env.apiai_client_token
 
 controller = Botkit.facebookbot
-  debug: false
+  debug: true
   log: false
   access_token: process.env.page_token
   verify_token: process.env.verify_token
@@ -52,34 +52,31 @@ controller.hears ['(.*)'], 'message_received', (bot, message) ->
         apiai.process message, bot
 
 apiai
-  .all (message, resp, bot) ->
-    console.log "—————————————————"
+  .all (fb_message, resp, bot) ->
+    console.log "—API.AI RESPONSE————————————————"
     console.log resp
+    console.log "—RESPONSE.result.fulfillment.messages————————————————"
+    console.log resp.result.fulfillment.messages
     console.log "—————————————————"
 
     if lib.apiai_no_match resp
-      logging.was_a_request_not_matched_last_minute message.user, (matched) ->
-        if matched
-          bot.reply message, replies.dont_know_please_rephrase
-        else
-          bot.reply message, replies.dont_know_try_calling
-        logging.log_no_kb_match message
-
+      bot.reply fb_message, replies.dont_know_try_calling
+      logging.log_no_kb_match fb_message
     else
-      if lib.apiai_resp_has_quick_replies resp
-        bot.reply message, lib.reply_with_buttons resp
-      else if lib.apiai_resp_has_image resp
-        if resp.result.fulfillment.speech
-          bot.reply message, lib.prep_reply resp.result.fulfillment.speech
-        bot.reply message, lib.reply_with_image resp
-      else
-        if not resp.result.fulfillment.messages
-          bot.reply message, lib.prep_reply resp.result.fulfillment.speech
-        else
-          _.each resp.result.fulfillment.messages, (m, i) ->
-            if m.type is 0 and m.speech
-              setTimeout () ->
-                bot.reply message, lib.prep_reply m.speech
-              , i * 1000   # 1 second delay for each message over 1
+      lib.space_out_and_delegate_messages bot, fb_message, resp.result.fulfillment.messages
 
-        logging.log_response message, resp
+    # else
+    #   if lib.apiai_resp_has_quick_replies resp
+    #     bot.reply message, lib.reply_with_buttons resp
+    #   else if lib.apiai_resp_has_image resp
+    #     if resp.result.fulfillment.speech
+    #       bot.reply message, lib.prep_reply resp.result.fulfillment.speech
+    #     bot.reply message, lib.reply_with_image resp
+    #   else
+    #     if not resp.result.fulfillment.messages
+    #       bot.reply message, lib.prep_reply resp.result.fulfillment.speech
+    #     else
+    #       lib.messages_with_delay resp.result.fulfillment.messages, (message_text) ->
+    #         bot.reply message, lib.prep_reply message_text
+    #
+    #     logging.log_response message, resp
