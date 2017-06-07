@@ -11,108 +11,56 @@ truncate_to_word = (string, maxLength) ->
   else
     string
 
+buttons_prep = (button_text) ->
+  button_text
+    .split /; ?/
+    .map (b) ->
+      messenger_url = b.match /(.+) (https?:\/\/m\.me\/.+)/i
+      page_url = b.match /(.+) (https?:\/\/.+)/i
+      phone_number = b.match /(.+) (0800.+)/
+      if messenger_url
+        type: 'web_url'
+        url: messenger_url[2]
+        title: '💬 ' + messenger_url[1]
+      else if page_url
+        type: 'web_url'
+        url: page_url[2]
+        title: '🔗 ' + page_url[1]
+      else if phone_number
+        type: 'phone_number'
+        title: '📞 ' + phone_number[1]
+        payload: phone_number[2]
+
+text_splitter = (text) ->
+  more_position = text.search /\[more\]/i
+  if more_position is -1 and text.length < 600
+    reply_text = text
+  else if more_position isnt -1
+    reply_text = text.substring 0, more_position
+    overflow = text.substring reply_text.length + 6, reply_text.length + 985
+  else if text.length > 600
+    reply_text = truncate_to_word text, 600
+    overflow = text.substring reply_text.length - 2, reply_text.length + 985
+  reply_text: reply_text
+  overflow: overflow
+
+quick_replies_reply = (aa_message) ->
+  text: aa_message.title
+  quick_replies:
+    _.map aa_message.replies, (qr) ->
+      content_type: 'text'
+      title: qr
+      payload: qr
+
+image_reply = (aa_message) ->
+  attachment:
+    type: 'image'
+    payload:
+      url: aa_message.imageUrl
+
 module.exports =
   apiai_no_match: (resp) ->
     resp.result.fulfillment.speech is "" and not _.has resp.result.fulfillment, 'messages'
-
-  apiai_resp_has_quick_replies: (resp) ->
-    quick_replies = _.filter resp.result.fulfillment.messages, (message) ->
-      message.type is 2
-    if quick_replies.length then true else false
-
-  apiai_resp_has_image: (api_response_data) ->
-    _.findWhere api_response_data.result.fulfillment.messages, type: 3
-
-  reply_with_image: (api_response_data) ->
-    url = (_.sample (_.where api_response_data.result.fulfillment.messages, type: 3)).imageUrl
-    attachment:
-      type: 'image'
-      payload:
-        url: url
-
-  reply_with_buttons: (api_response_data) ->
-    # console.log api_response_data
-    full_text = api_response_data.result.fulfillment.speech
-    text = truncate_to_word full_text, 600
-    quick_reply_message = _.findWhere api_response_data.result.fulfillment.messages, type: 2
-
-    if quick_reply_message.title.match /options/i # real quick replies
-      text: text
-      quick_replies:
-        _.map quick_reply_message.replies, (option) ->
-          content_type: 'text'
-          title: option
-          payload: option
-    else
-      buttons =
-        _.map quick_reply_message.title.split /; ?/, (text) ->
-          messenger_url = text.match /(.+) (https?:\/\/m\.me\/.+)/i
-          page_url = text.match /(.+) (https?:\/\/.+)/i
-          phone_number = text.match /(.+) (0800.+)/
-          if messenger_url
-            type: 'web_url'
-            url: messenger_url[2]
-            title: '💬 ' + messenger_url[1]
-          else if page_url
-            type: 'web_url'
-            url: page_url[2]
-            title: '🔗 ' + page_url[1]
-          else if phone_number
-            type: 'phone_number'
-            title: '📞 ' + phone_number[1]
-            payload: phone_number[2]
-          else
-            type: 'postback'
-            title: text
-            payload: text
-      if text.length > 600
-        buttons.push
-          type: 'postback'
-          title: 'Tell me more'
-          payload: 'TELL_ME_MORE:' + full_text.substring text.length - 2
-      attachment:
-        type: 'template'
-        payload:
-          template_type: 'button'
-          text: text
-          buttons: buttons
-
-  text_reply: (aa_speech) ->
-    more_position = aa_speech.search /\[more\]/i
-
-    if more_position is -1 and aa_speech.length < 600
-      return aa_speech
-    else if more_position isnt -1
-      trimmedAnswer = aa_speech.substring 0, more_position
-      residualAnswer = aa_speech.substring trimmedAnswer.length + 6, trimmedAnswer.length + 985
-    else
-      trimmedAnswer = truncate_to_word aa_speech, 600
-      residualAnswer = aa_speech.substring trimmedAnswer.length - 2, trimmedAnswer.length + 985
-
-    return attachment:
-      type: 'template'
-      payload:
-        template_type: 'button'
-        text: trimmedAnswer
-        buttons: [
-          type: 'postback'
-          title: 'Tell me more'
-          payload: 'TELL_ME_MORE:' + residualAnswer
-        ]
-
-  quick_replies_reply: (aa_message) ->
-    text: aa_message.title
-    quick_replies:
-      _.map aa_message.replies, (qr) ->
-        content_type: 'text'
-        title: qr
-        payload: qr
-
-  image_reply: (aa_message) ->
-    attachment:
-      type: 'image'
-      payload:
-        url: aa_message.imageUrl
 
   space_out_and_delegate_messages: (bot, fb_message, aa_messages) ->
     i = 0
@@ -128,17 +76,41 @@ module.exports =
 
     # then quick replies
     qr_message = _.findWhere aa_messages, type: 2
-    if qr_message
+    if qr_message and qr_message.replies.length > 0 # skipping malformed (old) buttons
       setTimeout () ->
-        bot.reply fb_message, lib.quick_replies_reply qr_message
+        bot.reply fb_message, quick_replies_reply qr_message
       , ++i * 1000 if qr_message
 
     # then an image picked at random
     image_message = _.sample _.where aa_messages, type: 3
     if image_message
       setTimeout () ->
-        bot.reply fb_message, lib.image_reply image_message
+        bot.reply fb_message, image_reply image_message
       , ++i * 1000
 
+  text_reply: (aa_speech) ->
+    split_text = text_splitter aa_speech
+    button_string = split_text.reply_text.match /\[(.*(0800|http).*)\]/i
+    if not button_string and not split_text.overflow
+      return aa_speech
+
+    buttons = []
+    if button_string
+      buttons = buttons_prep button_string[1]
+      reply_text = split_text.reply_text
+        .replace /\[(.*(0800|http).*)\]/i, ''
+        .trim()
+    if split_text.overflow
+      reply_text = split_text.reply_text
+      buttons.push
+        type: 'postback'
+        title: 'Tell me more'
+        payload: 'TELL_ME_MORE:' + split_text.overflow
+    attachment:
+      type: 'template'
+      payload:
+        template_type: 'button'
+        text: reply_text
+        buttons: buttons
 
 lib = module.exports

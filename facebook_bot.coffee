@@ -13,7 +13,7 @@ logging = require './logging'
 apiai = apiaibotkit process.env.apiai_client_token
 
 controller = Botkit.facebookbot
-  debug: true
+  debug: false
   log: false
   access_token: process.env.page_token
   verify_token: process.env.verify_token
@@ -41,7 +41,7 @@ controller.api.thread_settings.menu replies.menu
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
   if message.type is 'facebook_postback' and message.text.substring(0,13) == 'TELL_ME_MORE:'
-    bot.reply message, lib.prep_reply message.text.substring 13
+    bot.reply message, lib.text_reply message.text.substring 13
   else
     bot.startTyping message, () ->
       logging.log_request message
@@ -64,19 +64,3 @@ apiai
       logging.log_no_kb_match fb_message
     else
       lib.space_out_and_delegate_messages bot, fb_message, resp.result.fulfillment.messages
-
-    # else
-    #   if lib.apiai_resp_has_quick_replies resp
-    #     bot.reply message, lib.reply_with_buttons resp
-    #   else if lib.apiai_resp_has_image resp
-    #     if resp.result.fulfillment.speech
-    #       bot.reply message, lib.prep_reply resp.result.fulfillment.speech
-    #     bot.reply message, lib.reply_with_image resp
-    #   else
-    #     if not resp.result.fulfillment.messages
-    #       bot.reply message, lib.prep_reply resp.result.fulfillment.speech
-    #     else
-    #       lib.messages_with_delay resp.result.fulfillment.messages, (message_text) ->
-    #         bot.reply message, lib.prep_reply message_text
-    #
-    #     logging.log_response message, resp
