@@ -38,9 +38,11 @@ controller.api.thread_settings.get_started replies.get_started
 controller.api.thread_settings.menu replies.menu
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
-  if message.type is 'facebook_postback' then console.log message
-  if message.type is 'facebook_postback' and message.text.substring(0,13) == 'TELL_ME_MORE:'
-    bot.reply message, lib.text_reply message.text.substring 13
+  if message.type is 'facebook_postback'
+    if message.text.substring(0,13) == 'TELL_ME_MORE:'
+      bot.reply message, lib.text_reply message.text.substring 13
+    else
+      bot.reply message, lib.text_reply message.text
   else
     bot.startTyping message, () ->
       logging.log_request message
