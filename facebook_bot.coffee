@@ -33,13 +33,12 @@ controller.setupWebserver process.env.PORT or 3000, (err, webserver) ->
       require ('./ngrok-server')
 
 
-# controller.api.thread_settings.delete_greeting()
 controller.api.thread_settings.greeting replies.greeting
 controller.api.thread_settings.get_started replies.get_started
-# controller.api.thread_settings.delete_menu()
 controller.api.thread_settings.menu replies.menu
 
 controller.hears ['(.*)'], 'message_received', (bot, message) ->
+  if message.type is 'facebook_postback' then console.log message
   if message.type is 'facebook_postback' and message.text.substring(0,13) == 'TELL_ME_MORE:'
     bot.reply message, lib.text_reply message.text.substring 13
   else
